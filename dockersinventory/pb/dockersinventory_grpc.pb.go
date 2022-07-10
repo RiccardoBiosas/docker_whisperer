@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type InventoryClient interface {
 	GetDockerImagesList(ctx context.Context, in *GetDockerImagesListRequest, opts ...grpc.CallOption) (*GetDockerImagesListResponse, error)
+	PostDockerImage(ctx context.Context, in *PostDockerImageRequest, opts ...grpc.CallOption) (*PostDockerImageResponse, error)
 }
 
 type inventoryClient struct {
@@ -38,11 +39,21 @@ func (c *inventoryClient) GetDockerImagesList(ctx context.Context, in *GetDocker
 	return out, nil
 }
 
+func (c *inventoryClient) PostDockerImage(ctx context.Context, in *PostDockerImageRequest, opts ...grpc.CallOption) (*PostDockerImageResponse, error) {
+	out := new(PostDockerImageResponse)
+	err := c.cc.Invoke(ctx, "/Inventory/PostDockerImage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // InventoryServer is the server API for Inventory service.
 // All implementations must embed UnimplementedInventoryServer
 // for forward compatibility
 type InventoryServer interface {
 	GetDockerImagesList(context.Context, *GetDockerImagesListRequest) (*GetDockerImagesListResponse, error)
+	PostDockerImage(context.Context, *PostDockerImageRequest) (*PostDockerImageResponse, error)
 	mustEmbedUnimplementedInventoryServer()
 }
 
@@ -52,6 +63,9 @@ type UnimplementedInventoryServer struct {
 
 func (UnimplementedInventoryServer) GetDockerImagesList(context.Context, *GetDockerImagesListRequest) (*GetDockerImagesListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDockerImagesList not implemented")
+}
+func (UnimplementedInventoryServer) PostDockerImage(context.Context, *PostDockerImageRequest) (*PostDockerImageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostDockerImage not implemented")
 }
 func (UnimplementedInventoryServer) mustEmbedUnimplementedInventoryServer() {}
 
@@ -84,6 +98,24 @@ func _Inventory_GetDockerImagesList_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Inventory_PostDockerImage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PostDockerImageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServer).PostDockerImage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Inventory/PostDockerImage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServer).PostDockerImage(ctx, req.(*PostDockerImageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Inventory_ServiceDesc is the grpc.ServiceDesc for Inventory service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -94,6 +126,10 @@ var Inventory_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDockerImagesList",
 			Handler:    _Inventory_GetDockerImagesList_Handler,
+		},
+		{
+			MethodName: "PostDockerImage",
+			Handler:    _Inventory_PostDockerImage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

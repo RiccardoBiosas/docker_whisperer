@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	dockerController "docker_whisperer/docker_controller"
 	pb "docker_whisperer/dockersinventory/pb"
 	"log"
 	"net"
@@ -16,8 +17,10 @@ type server struct {
 
 func (s *server) GetDockerImagesList(ctx context.Context, in *pb.GetDockerImagesListRequest) (*pb.GetDockerImagesListResponse, error) {
 	log.Printf("Received request: %v", in.ProtoReflect().Descriptor().FullName())
+	dc, _ := dockerController.NewController()
+	imagesList, _ := dc.ListImages()
 	return &pb.GetDockerImagesListResponse{
-		DockerImages: GetDockerImagesSample(),
+		DockerImages: imagesList,
 	}, nil
 }
 
@@ -34,14 +37,4 @@ func main() {
 	if err := s.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
-}
-
-func GetDockerImagesSample() []*pb.DockerImage {
-	dockerImages := []*pb.DockerImage{
-		{
-			Image: "alpine",
-			Cmd:   "echo",
-		},
-	}
-	return dockerImages
 }
