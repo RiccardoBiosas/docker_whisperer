@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "dockersinventory/pb";
+
+message DockerImage {
+    string image = 1;
+    string cmd = 2;
+} 
+
+message GetDockerImagesListRequest {
+    string image = 1;
+    string cmd = 2;
+}
+message GetDockerImagesListResponse { repeated DockerImage dockerImages = 1; }
+
+service Inventory {
+    rpc GetDockerImagesList(GetDockerImagesListRequest) returns (GetDockerImagesListResponse) {}
+}
