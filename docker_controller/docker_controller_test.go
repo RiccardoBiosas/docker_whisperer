@@ -35,3 +35,15 @@ func TestBuildImageWithAbsolutePath(t *testing.T) {
 
 	err = controller.BuildLocalImage(concatenatedPath, "default")
 }
+
+func TestPullImage(t *testing.T) {
+	controller, err := NewController()
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = controller.PullImage("alpine")
+	if err != nil {
+		t.Error(err)
+	}
+}
