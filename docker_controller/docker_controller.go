@@ -1,12 +1,15 @@
 package docker_controller
 
 import (
+	"bytes"
 	"context"
 	pb "docker_whisperer/dockersinventory/pb"
+	"docker_whisperer/utils"
 	"io"
 	"os"
 
 	"github.com/docker/docker/api/types"
+	containerTypes "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 )
 
@@ -53,5 +56,24 @@ func (c *Controller) PullImage(image string) (err error) {
 	defer reader.Close()
 	io.Copy(os.Stdout, reader)
 
+	return nil
+}
+
+func (c *Controller) BuildLocalImage(imageFilePath string, isolationLevel containerTypes.Isolation) (err error) {
+	buf, err := utils.CreateTarball(imageFilePath)
+
+	reader := bytes.NewReader(buf.Bytes())
+
+	buildImageOption := types.ImageBuildOptions{
+		Context:    reader,
+		Dockerfile: imageFilePath,
+		Isolation:  isolationLevel,
+	}
+	response, err := c.cli.ImageBuild(context.Background(), reader, buildImageOption)
+	defer response.Body.Close()
+	_, err = io.Copy(os.Stdout, response.Body)
+	if err != nil {
+		return err
+	}
 	return nil
 }
